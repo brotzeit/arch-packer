@@ -32,7 +32,7 @@
 (require 's)
 (require 'json)
 
-(defgroup arch-packer
+(defgroup arch-packer nil
   "Manager for Arch Linux packages."
   :prefix "arch-packer-"
   :group 'applications)
