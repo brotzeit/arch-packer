@@ -213,7 +213,7 @@
       (set-process-filter proc 'arch-packer-process-filter)
       (accept-process-output proc 0.1))))
 
-(defun arch-packer-process-filter (proc output)
+(defun arch-packer-process-filter (proc _output)
   "Filter for arch-packer-process PROC."
   (let ((buf (process-buffer proc)))
     (with-current-buffer buf
