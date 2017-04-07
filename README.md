@@ -1,4 +1,4 @@
-arch-packer.el
+arch-packer
 ============
 
 Arch-packer provides a package menu and allows you to install, upgrade and delete packages. It can be 
@@ -19,3 +19,8 @@ Shortcuts for `arch-packer-package-menu-mode` buffers:
  * `r`     `arch-packer-list-packages` refresh package list
  * `i`     `arch-packer-install-package` prompt user for packages
  * `x`     `arch-packer-menu-execute` perform marked package menu actions
+ * `RET`   `arch-packer-menu-visit-homepage` follow link
+
+Change default to pacaur:
+
+`(setq arch-packer-default-command "pacaur")`
