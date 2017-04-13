@@ -79,8 +79,7 @@
 (defcustom arch-packer-display-status-reporter t
   "Display progress-reporter."
   :type 'boolean
-  :group 'pippel)
-
+  :group 'arch-packer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Package menu mode
