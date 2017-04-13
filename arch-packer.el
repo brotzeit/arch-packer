@@ -111,7 +111,7 @@
   (setq tabulated-list-padding 2)
   (tabulated-list-init-header))
 
-(defun pacman-menu-entry (pkg)
+(defun arch-packer-menu-entry (pkg)
   "Return a package entry of PKG suitable for `tabulated-list-entries'."
   (let ((name (alist-get 'Name pkg))
         (version (alist-get 'Version pkg))
@@ -145,7 +145,7 @@
         (goto-char (point-min))
         (setq tabulated-list-entries nil)
         (setq pkg-list
-              (reverse (mapcar #'pacman-menu-entry packages)))
+              (reverse (mapcar #'arch-packer-menu-entry packages)))
         (dolist (pkg pkg-list)
           (if (not (string= (elt (elt pkg 1) 1) (elt (elt pkg 1) 2)))
               (push pkg tabulated-list-entries)
