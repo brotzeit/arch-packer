@@ -56,16 +56,6 @@
   :type 'integer
   :group 'arch-packer)
 
-(defcustom arch-packer-menu-latest-face "firebrick"
-  "Face for latest version when newer than installed version."
-  :type 'face
-  :group 'arch-packer)
-
-(defcustom arch-packer-menu-aur-face "#1793d0"
-  "Face for AUR packages."
-  :type 'face
-  :group 'arch-packer)
-
 (defcustom arch-packer-highlight-aur-packages t
   "Highlight AUR packages."
   :type 'boolean
@@ -79,6 +69,28 @@
 (defcustom arch-packer-display-status-reporter t
   "Display progress-reporter."
   :type 'boolean
+  :group 'arch-packer)
+
+;;; faces
+
+(defcustom arch-packer-menu-latest-face "firebrick"
+  "Face for latest version when newer than installed version."
+  :type 'face
+  :group 'arch-packer)
+
+(defcustom arch-packer-menu-aur-face "#1793d0"
+  "Face for AUR packages."
+  :type 'face
+  :group 'arch-packer)
+
+(defcustom arch-packer-info-attribute-face "#6e8b3d"
+  "Package attribute face for pacman-package-info buffer."
+  :type 'face
+  :group 'arch-packer)
+
+(defcustom arch-packer-info-dependencies-face "#b0e0e6"
+  "Package dependencies face for pacman-package-info buffer."
+  :type 'face
   :group 'arch-packer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
