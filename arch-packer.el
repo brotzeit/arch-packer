@@ -321,12 +321,14 @@
     (arch-packer-wait-shell-subprocess)
     (arch-packer-get-exit-status)))
 
-(defun arch-packer-get-info ()
+(defun arch-packer-get-info (&optional package)
   "Return list containing information on installed packages."
   (remove "" (split-string
               (shell-command-to-string
                (concat arch-packer-default-command
-                       (format " -Q%s --info" (if arch-packer-query-options "e" ""))))
+                       (format " %s -Q%s --info"
+                               (if package package "")
+                               (if arch-packer-query-options "e" ""))))
               "\n\n")))
 
 (defun arch-packer-get-outdated ()
@@ -380,6 +382,37 @@
   (save-excursion
     (beginning-of-line-text)
     (browse-url (get-text-property (point) 'link))))
+
+(defun arch-packer-pkg-info ()
+  "Display additional information in seperate buffer."
+  (interactive)
+  (save-excursion
+    (beginning-of-line-text)
+    (let ((info (car (arch-packer-get-info (symbol-at-point))))
+          (buf (get-buffer-create "*pacman-package-info*")))
+      (with-current-buffer buf
+        (let ((buffer-read-only nil))
+          (erase-buffer)
+          (goto-char (point-min))
+          (dolist (attr (split-string info "\n"))
+            (let* ((line (split-string attr "\s:\s"))
+                   (name (car line))
+                   (value (cadr line))
+                   (proper (lambda (str font)
+                             (propertize str 'font-lock-face `(:foreground ,font)))))
+              (cond
+               ((string-match "^Depends" name)
+                (insert (funcall proper name arch-packer-info-attribute-face)
+                        " : "
+                        (funcall proper value arch-packer-info-dependencies-face)
+                        "\n"))
+               (t
+                (if (not (string-match "^\s" name))
+                    (insert (funcall proper name arch-packer-info-attribute-face) " : " value "\n")
+                  (insert attr "\n")))))))
+        (special-mode)
+        (font-lock-mode)
+        (pop-to-buffer buf)))))
 
 (defun arch-packer-menu-execute ()
   "Perform marked Package Menu actions."
