@@ -151,7 +151,7 @@
         pkg-list
         latest)
     (with-current-buffer buf
-      (let ((_read-only-mode nil))
+      (let ((buffer-read-only nil))
         (arch-packer-package-menu-mode)
         (erase-buffer)
         (goto-char (point-min))
