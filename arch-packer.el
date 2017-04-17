@@ -479,7 +479,7 @@
      (arch-packer-open-shell-process)
      (arch-packer-refresh-database)))
   (let ((pkg (read-from-minibuffer "Enter package name: ")))
-    (arch-packer-upgrade-package pkg)))
+    (arch-packer-upgrade-package (s-trim pkg))))
 
 ;;;###autoload
 (defun arch-packer-list-packages ()
