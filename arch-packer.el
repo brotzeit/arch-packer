@@ -273,7 +273,7 @@
 (defun arch-packer-wait-shell-subprocess ()
   "Wait until subprocess of arch-packer shell process finished."
   (while (process-running-child-p arch-packer-process-name)
-    (sit-for 1)))
+    (sit-for 0.1)))
 
 (defun arch-packer-get-exit-status ()
   "Get exit status of pacman subprocess."
