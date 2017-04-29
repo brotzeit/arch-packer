@@ -56,6 +56,11 @@
   :type 'integer
   :group 'arch-packer)
 
+(defcustom arch-packer-repository-column-width-version 15
+  "Width of the repository column in `arch-packer-search-mode'."
+  :type 'integer
+  :group 'arch-packer)
+
 (defcustom arch-packer-highlight-aur-packages t
   "Highlight AUR packages."
   :type 'boolean
@@ -68,6 +73,11 @@
 
 (defcustom arch-packer-display-status-reporter t
   "Display progress-reporter."
+  :type 'boolean
+  :group 'arch-packer)
+
+(defcustom arch-packer-highlight-search-string t
+  "Highlight search string in `arch-packer-search-mode' buffer."
   :type 'boolean
   :group 'arch-packer)
 
@@ -93,6 +103,11 @@
   :type 'face
   :group 'arch-packer)
 
+(defcustom arch-packer-search-string-highlight-face "orange"
+  "Face for highlighted search string in `arch-packer-search-mode'."
+  :type 'face
+  :group 'arch-packer)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Package menu mode
 
@@ -104,6 +119,7 @@
     (define-key map (kbd "U") 'arch-packer-menu-mark-all-upgrades)
     (define-key map (kbd "u") 'arch-packer-menu-mark-upgrade)
     (define-key map (kbd "r") 'arch-packer-list-packages)
+    (define-key map (kbd "s") 'arch-packer-search-package)
     (define-key map (kbd "i") 'arch-packer-install-package)
     (define-key map (kbd "x") 'arch-packer-menu-execute)
     (define-key map (kbd "b") 'arch-packer-menu-visit-homepage)
@@ -203,6 +219,96 @@
         (push pkg-alist result)))
     result))
 
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Search menu mode
+
+(defvar arch-packer-search-string nil
+  "Holds search string.")
+
+(defvar arch-packer-search-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map tabulated-list-mode-map)
+    ;; (define-key map (kbd "i") 'arch-packer-install-package) grab package name
+    (define-key map (kbd "r") 'arch-packer-list-packages)
+    (define-key map (kbd "s") 'arch-packer-search-package)
+    (define-key map (kbd "q") 'quit-window)
+    map)
+  "Local keymap for `arch-packer-search-mode' buffers.")
+
+(define-derived-mode arch-packer-search-mode tabulated-list-mode "Search Menu"
+  "Major mode for browsing search results."
+  (setq buffer-read-only nil)
+  (setq truncate-lines t)
+  (setq tabulated-list-format
+        `[("Package" ,arch-packer-column-width-package nil)
+          ("Version" ,arch-packer-column-width-version nil)
+          ("Repository" ,arch-packer-repository-column-width-version nil) 
+          ("Description" 0 nil)])
+  (setq tabulated-list-padding 2)
+  (tabulated-list-init-header))
+
+(defun arch-packer-search-entry (pkg)
+  "Return a search entry of PKG suitable for `tabulated-list-entries'."
+  (let ((name (alist-get 'Name pkg))
+        (version (alist-get 'Version pkg))
+        (repository (alist-get 'Repository pkg))
+        (description (alist-get 'Description pkg)))
+    (list name `[,name
+                 ,version
+                 ,(if (string= repository "aur")
+                      (propertize repository 'font-lock-face `(:foreground ,arch-packer-menu-aur-face))
+                    repository)
+                 ,description])))
+
+(defun arch-packer-generate-search-menu ()
+  "Re-populate `tabulated-list-entries'."
+  (interactive)
+  (let ((buf (get-buffer arch-packer-process-buffer))
+        (packages (arch-packer-get-search-alist)))
+    (with-current-buffer buf
+      (let* ((buffer-read-only nil))
+        (arch-packer-search-mode)
+        (erase-buffer)
+        (goto-char (point-min))
+        (setq tabulated-list-entries
+              (mapcar #'arch-packer-search-entry (reverse packages)))
+        (tabulated-list-print t)
+        (if arch-packer-highlight-search-string
+            (highlight-regexp  arch-packer-search-string arch-packer-search-string-highlight-face))
+        (read-only-mode t)))
+    (display-buffer buf)))
+
+(defun arch-packer-get-search-alist ()
+  "Return alist containing various package information on search results."
+  (let (result)
+    (with-temp-buffer
+      (insert (arch-packer-search-pkg arch-packer-search-string))
+      (goto-char (point-min))
+      (while (not (eobp))
+        (if (looking-at-p "^[a-z]+\\/")
+            (let* ((line (substring-no-properties (buffer-string) (- (point) 1) (end-of-line)))
+                   (linelist (split-string line " "))
+                   (repo (nth 0 (split-string (nth 0 linelist) "/")))
+                   (name (nth 1 (split-string (nth 0 linelist) "/")))
+                   (version (nth 1 linelist))
+                   (offset (point))
+                   pkg-alist)
+              (forward-line)
+              (push `(Description . ,(s-trim (substring-no-properties (buffer-string) offset (line-end-position)))) pkg-alist) 
+              (push `(Repository . ,repo) pkg-alist)
+              (push `(Name . ,name) pkg-alist)
+              (push `(Version . ,(s-trim version)) pkg-alist)
+              (push pkg-alist result)))
+        (forward-line)))
+    result))
+
+(defun arch-packer-search-pkg (search-string)
+  "Search for packages using SEARCH-STRING"
+  (shell-command-to-string
+   (concat arch-packer-default-command
+           " -Ss "
+           search-string)))
+
 ;;;;;;;;;;;;;;;;;;;;
 ;;; Shell Process
 
@@ -234,7 +340,11 @@
         (arch-packer-disable-status-reporter)
         (message arch-packer-subprocess-output))
        ((string-match "Pacman finished\n" output)
-        (arch-packer-generate-menu (arch-packer-get-package-alist))
+        (if arch-packer-search-string
+            (and
+             (arch-packer-generate-search-menu)
+             (setq arch-packer-search-string nil))
+          (arch-packer-generate-menu (arch-packer-get-package-alist)))
         (arch-packer-disable-status-reporter)
         (message "Pacman finished"))
        ((string-match "\\[sudo\\] password for" output)
@@ -469,6 +579,16 @@
         (arch-packer-wait-shell-subprocess)
         (when delete-list
           (arch-packer-delete-package (mapconcat 'identity delete-list " ")))))))
+
+;;;###autoload
+(defun arch-packer-search-package ()
+  "Prompt user for search string. Display results in `arch-packer-search-mode-map'"
+  (interactive)
+  (unless (arch-packer-shell-process-live-p)
+    (arch-packer-open-shell-process))
+  (let ((pkg (read-from-minibuffer "Enter package name: ")))
+    (setq arch-packer-search-string (s-trim pkg)))
+  (arch-packer-get-exit-status))
 
 ;;;###autoload
 (defun arch-packer-install-package ()
