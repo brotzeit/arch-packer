@@ -405,10 +405,12 @@
 
 (defun arch-packer-status-reporter ()
   "Status indicator is shown in the echo area while arch-packer shell process alive."
-  (unless (active-minibuffer-window)
+  (unless (or (arch-packer-shell-process-live-p)
+              (active-minibuffer-window))
     (let ((progress-reporter (make-progress-reporter "Pacman processing...")))
       (dotimes (i 1000)
-        (when (process-running-child-p arch-packer-process-name)
+        (when (and (arch-packer-shell-process-live-p)
+                   (process-running-child-p arch-packer-process-name))
           (progress-reporter-update progress-reporter i)
           (sit-for 0.1))))))
 
