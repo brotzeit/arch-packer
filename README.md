@@ -46,7 +46,7 @@ Shortcuts for `arch-packer-search-mode` buffers:
 
 Change default to pacaur:
 
-    `(setq arch-packer-default-command "pacaur")`
+    (setq arch-packer-default-command "pacaur")
 
 
 ## Installation
