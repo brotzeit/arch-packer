@@ -511,33 +511,41 @@
 (defun arch-packer-pkg-info ()
   "Display additional information in seperate buffer."
   (interactive)
-  (save-excursion
-    (beginning-of-line-text)
-    (let ((info (car (arch-packer-get-info (symbol-at-point))))
-          (buf (get-buffer-create "*pacman-package-info*")))
-      (with-current-buffer buf
-        (let ((buffer-read-only nil))
-          (erase-buffer)
-          (goto-char (point-min))
-          (dolist (attr (split-string info "\n"))
-            (let* ((line (split-string attr "\s:\s"))
-                   (name (car line))
-                   (value (cadr line))
-                   (proper (lambda (str font)
-                             (propertize str 'font-lock-face `(:foreground ,font)))))
-              (cond
-               ((string-match "^Depends" name)
-                (insert (funcall proper name arch-packer-info-attribute-face)
-                        " : "
-                        (funcall proper value arch-packer-info-dependencies-face)
-                        "\n"))
-               (t
-                (if (not (string-match "^\s" name))
-                    (insert (funcall proper name arch-packer-info-attribute-face) " : " value "\n")
-                  (insert attr "\n")))))))
-        (special-mode)
-        (font-lock-mode)
-        (pop-to-buffer buf)))))
+  (let ((buf (get-buffer-create "*pacman-package-info*"))
+        (pkg (save-excursion
+               (beginning-of-line-text)
+               (word-at-point))))
+    (if (and (string= major-mode "arch-packer-search-mode")
+             (string= arch-packer-default-command "pacaur"))
+        (async-shell-command (concat arch-packer-default-command " -Si " pkg) buf)
+      (save-excursion
+        (beginning-of-line-text)
+        (let ((info (car (arch-packer-get-info (symbol-at-point)))))
+          (if (string-match "^error:" info)
+              (print (substring-no-properties info))
+            (with-current-buffer buf
+              (let ((buffer-read-only nil))
+                (erase-buffer)
+                (goto-char (point-min))
+                (dolist (attr (split-string info "\n"))
+                  (let* ((line (split-string attr "\s:\s"))
+                         (name (car line))
+                         (value (cadr line))
+                         (proper (lambda (str font)
+                                   (propertize str 'font-lock-face `(:foreground ,font)))))
+                    (cond
+                     ((string-match "^Depends" name)
+                      (insert (funcall proper name arch-packer-info-attribute-face)
+                              " : "
+                              (funcall proper value arch-packer-info-dependencies-face)
+                              "\n"))
+                     (t
+                      (if (not (string-match "^\s" name))
+                          (insert (funcall proper name arch-packer-info-attribute-face) " : " value "\n")
+                        (insert attr "\n")))))))
+              (special-mode)
+              (font-lock-mode)
+              (pop-to-buffer buf))))))))
 
 (defun arch-packer-menu-execute ()
   "Perform marked Package Menu actions."
