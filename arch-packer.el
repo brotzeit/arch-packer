@@ -514,7 +514,7 @@
   (let ((buf (get-buffer-create "*pacman-package-info*"))
         (pkg (save-excursion
                (beginning-of-line-text)
-               (word-at-point))))
+               (tabulated-list-get-id))))
     (if (and (string= major-mode "arch-packer-search-mode")
              (string= arch-packer-default-command "pacaur"))
         (async-shell-command (concat arch-packer-default-command " -Si " pkg) buf)
