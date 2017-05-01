@@ -228,7 +228,7 @@
 (defvar arch-packer-search-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map tabulated-list-mode-map)
-    ;; (define-key map (kbd "i") 'arch-packer-install-package) grab package name
+    (define-key map (kbd "i") 'arch-packer-install-package)
     (define-key map (kbd "r") 'arch-packer-list-packages)
     (define-key map (kbd "s") 'arch-packer-search-package)
     (define-key map (kbd "q") 'quit-window)
@@ -597,11 +597,16 @@
   "Prompt user for a string containing packages to be installed."
   (interactive)
   (unless (arch-packer-shell-process-live-p)
-    (and
-     (arch-packer-open-shell-process)
-     (arch-packer-refresh-database)))
-  (let ((pkg (read-from-minibuffer "Enter package name: ")))
-    (arch-packer-upgrade-package (s-trim pkg))))
+    (and (arch-packer-open-shell-process)
+         (arch-packer-refresh-database)))
+  (if (string= major-mode "arch-packer-search-mode")
+      (let ((pkg (save-excursion
+                   (beginning-of-line-text)
+                   (word-at-point))))
+        (when (yes-or-no-p (format "Install package %s ?" pkg))
+          (arch-packer-upgrade-package (s-trim pkg))))
+    (let ((pkg (read-from-minibuffer "Enter package name: ")))
+      (arch-packer-upgrade-package (s-trim pkg)))))
 
 ;;;###autoload
 (defun arch-packer-list-packages ()
