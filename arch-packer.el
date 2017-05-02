@@ -124,6 +124,7 @@
     (define-key map (kbd "i") 'arch-packer-install-package)
     (define-key map (kbd "x") 'arch-packer-menu-execute)
     (define-key map (kbd "b") 'arch-packer-menu-visit-homepage)
+    (define-key map (kbd "o") 'arch-packer-display-output-buffer)
     (define-key map (kbd "RET") 'arch-packer-pkg-info)
     (define-key map (kbd "q") 'quit-window)
     map)
@@ -337,6 +338,9 @@
 (defvar arch-packer-process-output nil
   "Holds output of last command executed by subprocess.")
 
+(defvar arch-packer-process-output-buffer "*arch-packer-output*"
+  "Buffer that displays subprocess output.")
+
 (defun arch-packer-open-shell-process ()
   "Start shell process."
   (let ((buf arch-packer-process-buffer))
@@ -371,7 +375,14 @@
         (arch-packer-get-exit-status))
        (t
         (unless (string-match "^\\[" output)
-          (setq arch-packer-subprocess-output output)))))))
+          (and (setq arch-packer-subprocess-output output)
+               (let ((buf (get-buffer-create arch-packer-process-output-buffer)))
+                 (with-current-buffer buf
+                   (if (get-buffer-window buf)
+                       (set-window-point (get-buffer-window buf) (point-max))
+                     (goto-char (point-max)))
+                   (prog-mode)
+                   (insert output))))))))))
 
 (defun arch-packer-call-shell-process (proc string)
   "Send arch-packer shell-process PROC the contents of STRING as input."
@@ -489,6 +500,12 @@
   
 ;;;;;;;;;;;;;;;;;;
 ;;; Interaction
+
+(defun arch-packer-display-output-buffer ()
+  "Display output of shell subprocess in seperate buffer."
+  (interactive)
+  (get-buffer-create arch-packer-process-output-buffer)
+  (display-buffer arch-packer-process-output-buffer))
 
 (defun arch-packer-menu-mark-upgrade ()
   "Mark upgradable package."
