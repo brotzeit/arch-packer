@@ -31,6 +31,7 @@
 (require 'tabulated-list)
 (require 's)
 (require 'json)
+(require 'async)
 
 (defgroup arch-packer nil
   "Manager for Arch Linux packages."
@@ -309,6 +310,17 @@
            " -Ss "
            search-string)))
 
+(defun arch-packer-pkg-menu-async ()
+  "Generate package menu asynchronously."
+  (async-start
+   (lambda ()
+     (require 'package)
+     (package-initialize)
+     (require 'arch-packer)
+     (arch-packer-get-package-alist))
+   (lambda (result)
+     (arch-packer-generate-menu result))))
+
 ;;;;;;;;;;;;;;;;;;;;
 ;;; Shell Process
 
@@ -344,7 +356,7 @@
             (and
              (arch-packer-generate-search-menu)
              (setq arch-packer-search-string nil))
-          (arch-packer-generate-menu (arch-packer-get-package-alist)))
+          (arch-packer-pkg-menu-async))
         (arch-packer-disable-status-reporter)
         (message "Pacman finished"))
        ((string-match "\\[sudo\\] password for" output)
