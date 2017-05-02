@@ -24,6 +24,7 @@ Shortcuts for `arch-packer-package-menu-mode` buffers:
  * `s`     `arch-packer-search-package` search for string
  * `x`     `arch-packer-menu-execute` perform marked package menu actions
  * `b`     `arch-packer-menu-visit-homepage` follow link
+ * `o`     `arch-packer-display-output-buffer` display subprocess output
  * `RET`   `arch-packer-pkg-info` display info in seperate buffer
 
 
@@ -36,7 +37,7 @@ Shortcuts for `arch-packer-package-menu-mode` buffers:
 Use `M-x arch-packer-search-package`.
 
 Shortcuts for `arch-packer-search-mode` buffers:
- * `i`     `arch-packer-install-package` prompt user for packages
+ * `i`     `arch-packer-install-package` install selected package
  * `r`     `arch-packer-list-packages` refresh package list
  * `s`     `arch-packer-search-package` search for string
  * `RET`   `arch-packer-pkg-info` display info in seperate buffer
