@@ -147,9 +147,10 @@
         (version (alist-get 'Version pkg))
         (latest (alist-get 'Latest pkg))
         (description (alist-get 'Description pkg))
-        (link (alist-get 'URL pkg)))
+        (link (alist-get 'URL pkg))
+        (aur (alist-get 'Validated pkg)))
     (list name `[,(if (and arch-packer-highlight-aur-packages
-                           (alist-get 'Validated pkg))
+                           aur)
                       (progn
                         (put-text-property 0 (length name) 'link link name)
                         (put-text-property 0 (length name) 'AUR version name)
@@ -159,7 +160,10 @@
                       name))
                  ,version
                  ,(if (string= version latest)
-                      latest
+                      (if (and (string= arch-packer-default-command "pacman")
+                               aur)
+                          "N/A"
+                        latest)
                     (propertize latest 'font-lock-face `(:foreground ,arch-packer-menu-latest-face)))
                  ,description])))
 
