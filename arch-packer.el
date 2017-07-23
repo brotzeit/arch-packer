@@ -341,6 +341,10 @@
 (defvar arch-packer-process-output-buffer "*arch-packer-output*"
   "Buffer that displays subprocess output.")
 
+(define-derived-mode arch-packer-output-mode prog-mode "Process output"
+  "Major mode for browsing search results."
+  (setq truncate-lines t))
+
 (defun arch-packer-open-shell-process ()
   "Start shell process."
   (let ((buf arch-packer-process-buffer))
@@ -382,7 +386,7 @@
                    (if (get-buffer-window buf)
                        (set-window-point (get-buffer-window buf) (point-max))
                      (goto-char (point-max)))
-                   (prog-mode)
+                   (arch-packer-output-mode)
                    (insert output))))))))))
 
 (defun arch-packer-process-sentinel (_proc _output)
