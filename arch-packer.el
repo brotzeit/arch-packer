@@ -349,6 +349,7 @@
                    "/bin/bash")
     (let ((proc (get-buffer-process buf)))
       (set-process-filter proc 'arch-packer-process-filter)
+      (set-process-sentinel proc 'arch-packer-process-sentinel)
       (accept-process-output proc 0.1))))
 
 (defun arch-packer-process-filter (proc output)
@@ -383,6 +384,11 @@
                      (goto-char (point-max)))
                    (prog-mode)
                    (insert output))))))))))
+
+(defun arch-packer-process-sentinel (_proc _output)
+  "The sentinel for arch-packer-process."
+  (let ((buf arch-packer-process-output-buffer))
+    (when buf (kill-buffer buf))))
 
 (defun arch-packer-call-shell-process (proc string)
   "Send arch-packer shell-process PROC the contents of STRING as input."
