@@ -659,8 +659,9 @@
   (if (arch-packer-shell-process-live-p)
       (unless (process-running-child-p arch-packer-process-name)
         (arch-packer-get-exit-status))
-    (progn (arch-packer-open-shell-process)
-           (arch-packer-refresh-database))))
+    (and (arch-packer-open-shell-process)
+           (arch-packer-refresh-database)
+           (arch-packer-get-exit-status))))
 
 (provide 'arch-packer)
 ;;; arch-packer.el ends here
