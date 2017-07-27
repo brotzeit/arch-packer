@@ -392,7 +392,7 @@
 
 (defun arch-packer-process-sentinel (_proc _output)
   "The sentinel for arch-packer-process."
-  (let ((buf arch-packer-process-output-buffer))
+  (let ((buf (get-buffer arch-packer-process-output-buffer)))
     (when buf (kill-buffer buf))))
 
 (defun arch-packer-call-shell-process (proc string)
