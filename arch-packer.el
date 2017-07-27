@@ -237,6 +237,7 @@
     (define-key map (kbd "i") 'arch-packer-install-package)
     (define-key map (kbd "r") 'arch-packer-list-packages)
     (define-key map (kbd "s") 'arch-packer-search-package)
+    (define-key map (kbd "RET") 'arch-packer-pkg-info)
     (define-key map (kbd "q") 'quit-window)
     map)
   "Local keymap for `arch-packer-search-mode' buffers.")
