@@ -342,8 +342,8 @@
 (defvar arch-packer-process-output-buffer "*arch-packer-output*"
   "Buffer that displays subprocess output.")
 
-(define-derived-mode arch-packer-output-mode prog-mode "Process output"
-  "Major mode for browsing search results."
+(defvar arch-packer-no-shell-history "; history -d $((HISTCMD-1))"
+  "Prevents arch-packer shell commands from being appended to history.")
   (setq truncate-lines t))
 
 (defun arch-packer-open-shell-process ()
@@ -427,9 +427,10 @@
   "Get exit status of pacman subprocess."
   (arch-packer-wait-shell-subprocess)
   (arch-packer-call-shell-process arch-packer-process-name
-                             "if [ `echo $?` -ne 0 ]; 
-                              then echo \"Pacman error\n\"; 
-                              else echo \"Pacman finished\n\" ;fi"))
+                                  (concat "if [ `echo $?` -ne 0 ];
+                                           then echo \"Pacman error\n\";
+                                           else echo \"Pacman finished\n\" ;fi"
+                                          arch-packer-no-shell-history)))
 
 (defun arch-packer-disable-status-reporter ()
   "Enable progress-reporter."
@@ -464,14 +465,17 @@
 (defun arch-packer-refresh-database ()
   "Download a fresh copy of the master package database."
   (let ((command (arch-packer-shell-command)))
-    (arch-packer-call-shell-process arch-packer-process-name (concat command " -Sy"))))
+    (arch-packer-call-shell-process arch-packer-process-name (concat command
+                                                                     " -Sy"
+                                                                     arch-packer-no-shell-history))))
 
 (defun arch-packer-delete-package (packages)
   "Uninstall provided PACKAGES."
   (let ((command (arch-packer-shell-command)))
   (arch-packer-call-shell-process arch-packer-process-name (concat command
                                                                    " -Rsn --noconfirm "
-                                                                   packages))
+                                                                   packages
+                                                                   arch-packer-no-shell-history))
   (arch-packer-wait-shell-subprocess)
   (arch-packer-get-exit-status)))
 
@@ -480,7 +484,8 @@
   (let ((command (arch-packer-shell-command)))
     (arch-packer-call-shell-process arch-packer-process-name (concat command
                                                                      " -S --noconfirm "
-                                                                     packages))
+                                                                     packages
+                                                                     arch-packer-no-shell-history))
     (arch-packer-wait-shell-subprocess)
     (arch-packer-get-exit-status)))
 
