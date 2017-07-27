@@ -344,7 +344,17 @@
 
 (defvar arch-packer-no-shell-history "; history -d $((HISTCMD-1))"
   "Prevents arch-packer shell commands from being appended to history.")
+
+(define-derived-mode arch-packer-output-mode special-mode "Process output"
+  "Major mode for displaying process output."
+  (setq buffer-read-only nil)
   (setq truncate-lines t))
+
+(defvar arch-packer-output-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map special-mode-map)
+    map)
+  "Local keymap for `arch-packer-output-mode' buffer.")
 
 (defun arch-packer-open-shell-process ()
   "Start shell process."
