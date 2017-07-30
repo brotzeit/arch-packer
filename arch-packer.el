@@ -32,6 +32,7 @@
 (require 's)
 (require 'json)
 (require 'async)
+(require 'dash)
 
 (defgroup arch-packer nil
   "Manager for Arch Linux packages."
